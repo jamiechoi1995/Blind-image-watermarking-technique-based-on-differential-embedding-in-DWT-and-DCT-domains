@@ -144,7 +144,7 @@ def compose(x1,x2):
             x.append(x1[int(i/2)])
         else:
             x.append(x2[int((i-1)/2)])
-    print(len(x))
+    # print(len(x))
     return x
 
 def decompose(x):
@@ -182,8 +182,8 @@ def revert_wm(wm):
 
 # start
 
-alpha = 0.2
-a = 200
+alpha = 0.3
+a = 400
 # b = a + 4096
 
 target_size = (256, 256)
@@ -240,6 +240,7 @@ for i in range(a,b):
 
 wm_template = encode_watermark(wm_template)
 
+# alpha=0.01
 X1_hat = X1.copy()
 X2_hat = X2.copy()
 for i in range(X1_hat.shape[0]):
@@ -252,14 +253,16 @@ x1_hat = idct(X1_hat, norm='ortho')
 x2_hat = idct(X2_hat, norm='ortho')
 
 x_hat = compose(x1_hat, x2_hat)
-# x_hat = compose(x1, x2)
 # print(compose([1,3,5,7], [2,4,6,8]))
 new_LL = inverse_zigzag(x_hat, int(img_w/2),int(img_h/2))
 
 wmed_img = pywt.idwt2([new_LL, (LH, HL, HH)], 'haar')
-# wmed_img = cv2.resize(wmed_img, (ori_img_w, ori_img_h))
-# wmed_img = cv2.merge([oriB, oriG, wmed_img])
-cv2.imwrite('wmed_img.jpg', wmed_img)
+wmed_img = cv2.resize(wmed_img, (ori_img_w, ori_img_h)).astype(int).clip(0,255)
+# print(wmed_img)
+final_img = cv2.merge([oriB, oriG, I1])
+final_img[:,:,2] = wmed_img
+# final_img = cv2.merge([oriB, oriG, wmed_img]) # why merge not work
+cv2.imwrite('wmed_img.jpg', final_img)
 
 '''detect'''
 wmed_img = cv2.imread('wmed_img.jpg')
